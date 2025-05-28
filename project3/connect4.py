@@ -218,17 +218,37 @@ def minimax(player, board, depth_limit):
 
 ### Please finish the code below ##############################################
 ###############################################################################
-    def value(player, board, depth_limit):
-        pass
+    def value(player, board, depth):
+        if board.terminal() or depth == 0:
+            return evaluate(max_player, board)
+        if player == max_player:
+            return max_value(player, board, depth)
+        else:
+            return min_value(player, board, depth)
 
-    def max_value(player, board, depth_limit):
-        pass
-    
-    def min_value(player, board, depth_limit):
-        pass
+    def max_value(player, board, depth):
+        v = -math.inf
+        best_col = None
+        for col, child in get_child_boards(player, board):
+            val = value(board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1, child, depth - 1)
+            if val > v:
+                v = val
+                best_col = col
+        nonlocal placement
+        if best_col is not None:
+            placement = best_col
+        return v
+
+    def min_value(player, board, depth):
+        v = math.inf
+        for col, child in get_child_boards(player, board):
+            val = value(board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1, child, depth - 1)
+            if val < v:
+                v = val
+        return v
 
     next_player = board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1
-    score = -math.inf
+    score = max_value(player, board, depth_limit)
 
 ###############################################################################
     return placement
