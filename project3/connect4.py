@@ -282,17 +282,43 @@ def alphabeta(player, board, depth_limit):
 
 ### Please finish the code below ##############################################
 ###############################################################################
-    def value(player, board, depth_limit, alpha, beta):
-        pass
+    def value(player, board, depth, alpha, beta):
+        if board.terminal() or depth == 0:
+            return evaluate(max_player, board)
+        if player == max_player:
+            return max_value(player, board, depth, alpha, beta)
+        else:
+            return min_value(player, board, depth, alpha, beta)
 
-    def max_value(player, board, depth_limit, alpha, beta):
-        pass
-    
-    def min_value(player, board, depth_limit, alpha, beta):
-        pass
+    def max_value(player, board, depth, alpha, beta):
+        v = -math.inf
+        best_col = None
+        for col, child in get_child_boards(player, board):
+            val = value(board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1, child, depth - 1, alpha, beta)
+            if val > v:
+                v = val
+                best_col = col
+            if v >= beta:
+                break
+            alpha = max(alpha, v)
+        nonlocal placement
+        if best_col is not None:
+            placement = best_col
+        return v
+
+    def min_value(player, board, depth, alpha, beta):
+        v = math.inf
+        for col, child in get_child_boards(player, board):
+            val = value(board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1, child, depth - 1, alpha, beta)
+            if val < v:
+                v = val
+            if v <= alpha:
+                break
+            beta = min(beta, v)
+        return v
 
     next_player = board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1
-    score = -math.inf
+    score = max_value(player, board, depth_limit, -math.inf, math.inf)
 ###############################################################################
     return placement
 
@@ -327,17 +353,40 @@ def expectimax(player, board, depth_limit):
 
 ### Please finish the code below ##############################################
 ###############################################################################
-    def value(player, board, depth_limit):
-        pass
+    def value(player, board, depth):
+        if board.terminal() or depth == 0:
+            return evaluate(max_player, board)
+        if player == max_player:
+            return max_value(player, board, depth)
+        else:
+            return exp_value(player, board, depth)
 
-    def max_value(player, board, depth_limit):
-        pass
-    
-    def min_value(player, board, depth_limit):
-        pass
+    def max_value(player, board, depth):
+        v = -math.inf
+        best_col = None
+        for col, child in get_child_boards(player, board):
+            val = value(board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1, child, depth - 1)
+            if val > v:
+                v = val
+                best_col = col
+        nonlocal placement
+        if best_col is not None:
+            placement = best_col
+        return v
+
+    def exp_value(player, board, depth):
+        children = get_child_boards(player, board)
+        if not children:
+            return evaluate(max_player, board)
+        total = 0
+        prob = 1 / len(children)
+        for col, child in children:
+            val = value(board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1, child, depth - 1)
+            total += prob * val
+        return total
 
     next_player = board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1
-    score = -math.inf
+    score = max_value(player, board, depth_limit)
 ###############################################################################
     return placement
 
